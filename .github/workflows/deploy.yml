@@ -31,7 +31,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: 
-            cd /app 
-            docker compose pull
+          script: |
+            cd /home/mbousouf/app && \
+            docker compose pull && \
             docker compose up -d
