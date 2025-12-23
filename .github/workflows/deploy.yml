@@ -3,8 +3,6 @@ on:
   push:
     branches: [ main ]
 jobs:
-  name: Debug - List files 📂
-    run: ls -R
   build-push:
     runs-on: ubuntu-latest
     environment: Assessemnt
@@ -12,6 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        run: ls -la 
       - name: Build and Push
         run: |
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest ./back-end
