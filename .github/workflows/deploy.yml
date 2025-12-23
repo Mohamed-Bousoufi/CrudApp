@@ -3,6 +3,8 @@ on:
   push:
     branches: [ main ]
 jobs:
+  name: Debug - List files 📂
+    run: ls -R
   build-push:
     runs-on: ubuntu-latest
     environment: Assessemnt
