@@ -14,8 +14,8 @@ jobs:
         run: ls -la 
       - name: Build and Push
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest ./back-end
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/front-end:latest ./front-end/app
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest ./backend
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/front-end:latest ./frontend/app
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/front-end:latest 
           
