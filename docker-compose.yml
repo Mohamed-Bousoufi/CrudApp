@@ -8,6 +8,9 @@ services:
     env_file: .env
     volumes:
       - mysql_data:/var/lib/mysql
+    
+    networks:
+      - app-network
 
   backend:
     image: elpaco/back-end:latest
@@ -16,11 +19,15 @@ services:
     env_file: .env
     depends_on:
       - mysql
+    networks:
+      - app-network
 
   frontend:
     image: elpaco/front-end:latest
     container_name: frontend
     restart: always
+    networks:
+      - app-network
 
   nginx:
     image: nginx:alpine
@@ -33,6 +40,10 @@ services:
     depends_on:
       - frontend
       - backend
+    networks:
+      - app-network
 
+  network:
+    name: app-network
 volumes:
   mysql_data:
