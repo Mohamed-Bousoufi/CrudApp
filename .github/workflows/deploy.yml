@@ -11,7 +11,7 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
       - name: Build and Push
-        run: cd /app |
+        run: |
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest ./back-end
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/front-end:latest ./front-end/app
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest
@@ -30,5 +30,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: 
+            cd /app 
             docker compose pull
             docker compose up -d
