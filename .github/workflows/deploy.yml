@@ -12,8 +12,11 @@ jobs:
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
       - name: Build and Push
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest .
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest ./back-end
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/front-end:latest ./front-end/app
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/back-end:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/front-end:latest
+          
 
   deploy:
     needs: build-push
