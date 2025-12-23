@@ -5,6 +5,7 @@ on:
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    environment: Assessemnt
     steps:
       - uses: actions/checkout@v4
       - name: Login to Docker Hub
@@ -17,6 +18,7 @@ jobs:
   deploy:
     needs: build-push
     runs-on: ubuntu-latest
+    environment: Assessemnt
     steps:
       - name: Remote SSH Deploy
         uses: appleboy/ssh-action@v1.0.3
