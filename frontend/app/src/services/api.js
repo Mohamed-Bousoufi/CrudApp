@@ -3,7 +3,7 @@ const API_URL = '/api';
 
 export const userApi = {
   // Get all users
-  async getUsers() {
+  getUsers: async () => {
     const response = await fetch(`${API_URL}/users/`);
     if (!response.ok) {
       throw new Error('Failed to fetch users');
@@ -12,7 +12,7 @@ export const userApi = {
   },
 
   // Get single user
-  async getUser(id) {
+  getUser: async (id) => {
     const response = await fetch(`${API_URL}/users/${id}/`);
     if (!response.ok) {
       throw new Error('Failed to fetch user');
@@ -21,7 +21,7 @@ export const userApi = {
   },
 
   // Create user
-  async createUser(userData) {
+  createUser: async (userData) => {
     const response = await fetch(`${API_URL}/users/`, {
       method: 'POST',
       headers: {
@@ -30,14 +30,13 @@ export const userApi = {
       body: JSON.stringify(userData),
     });
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || error.email?.[0] || 'Failed to create user');
+      throw new Error('Failed to create user');
     }
     return response.json();
   },
 
   // Update user
-  async updateUser(id, userData) {
+  updateUser: async (id, userData) => {
     const response = await fetch(`${API_URL}/users/${id}/`, {
       method: 'PUT',
       headers: {
@@ -46,14 +45,13 @@ export const userApi = {
       body: JSON.stringify(userData),
     });
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || error.email?.[0] || 'Failed to update user');
+      throw new Error('Failed to update user');
     }
     return response.json();
   },
 
   // Delete user
-  async deleteUser(id) {
+  deleteUser: async (id) => {
     const response = await fetch(`${API_URL}/users/${id}/`, {
       method: 'DELETE',
     });
