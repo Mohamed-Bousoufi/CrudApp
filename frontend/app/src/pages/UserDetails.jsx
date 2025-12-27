@@ -1,197 +1,188 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { userApi } from '../services/api';
-import UserForm from '../components/UserForm';
-import Modal from '../components/Modal';
-import ConfirmDialog from '../components/ConfirmDialog';
-import { toast } from 'sonner';
-import { Loader2, ArrowLeft, Pencil, Trash2, User, Mail, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useUser, useUpdateUser, useDeleteUser } from '@/hooks/useUsers';
+import { UserFormDialog } from '@/components/UserFormDialog';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Edit, Trash2, Mail, Calendar, User as UserIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
-function UserDetails() {
+const UserDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: user, isLoading, isError } = useUser(id || '');
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
 
-  const fetchUser = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await userApi.getUser(id);
-      setUser(data);
-    } catch (err) {
-      setError(err.message || 'Failed to fetch user');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleUpdateUser = (data) => {
+    if (!id) return;
+    updateUser.mutate(
+      {
+        id,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        gender: data.gender,
+        age: data.age,
+      },
+      {
+        onSuccess: () => {
+          setIsEditDialogOpen(false);
+        },
+      }
+    );
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, [id]);
-
-  const handleUpdate = async (formData) => {
-    setIsSubmitting(true);
-    try {
-      const updatedUser = await userApi.updateUser(id, formData);
-      setUser(updatedUser);
-      setIsEditOpen(false);
-      toast.success('User updated successfully');
-    } catch (err) {
-      toast.error(err.message || 'Failed to update user');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      await userApi.deleteUser(id);
-      toast.success('User deleted successfully');
-      navigate('/');
-    } catch (err) {
-      toast.error(err.message || 'Failed to delete user');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleDeleteUser = () => {
+    if (!id) return;
+    deleteUser.mutate(id, {
+      onSuccess: () => {
+        navigate('/');
+      },
+    });
   };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10 px-4">
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-10 w-10 animate-spin border-4 border-foreground border-t-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Loading user details...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !user) {
+  if (isError || !user) {
     return (
-      <div className="container mx-auto py-10 px-4">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-          <p className="text-red-600 mb-4">{error || 'User not found'}</p>
-          <button
-            onClick={() => navigate('/')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Users
-          </button>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-12">
+          <Button asChild variant="outline" className="mb-6 border-2 border-foreground">
+            <Link to="/">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Users
+            </Link>
+          </Button>
+          <div className="border-2 border-destructive bg-destructive/10 p-8 text-center">
+            <p className="text-xl font-medium text-destructive">User not found</p>
+            <p className="mt-2 text-muted-foreground">
+              The user you're looking for doesn't exist or has been deleted.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <button
-        onClick={() => navigate('/')}
-        className="mb-6 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md flex items-center transition-colors"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Users
-      </button>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-12">
+        <Button asChild variant="outline" className="mb-8 border-2 border-foreground">
+          <Link to="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Users
+          </Link>
+        </Button>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="h-8 w-8 text-blue-600" />
+        <Card className="border-2 border-foreground shadow-md">
+          <CardHeader className="border-b-2 border-foreground bg-muted/50">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center border-2 border-foreground bg-primary shadow-xs">
+                  <span className="text-2xl font-bold text-primary-foreground">
+                    {user.firstName[0]}{user.lastName[0]}
+                  </span>
+                </div>
+                <div>
+                  <CardTitle className="text-3xl font-bold tracking-tight">
+                    {user.firstName} {user.lastName}
+                  </CardTitle>
+                  <Badge
+                    variant="outline"
+                    className="mt-2 border-2 border-foreground capitalize"
+                  >
+                    {user.gender}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(true)}
+                  className="border-2 border-foreground"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {user.first_name} {user.last_name}
-              </h1>
-              <p className="text-gray-500 flex items-center">
-                <Mail className="h-4 w-4 mr-1" />
-                {user.email}
-              </p>
-            </div>
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setIsEditOpen(true)}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center transition-colors"
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </button>
-            <button
-              onClick={() => setIsDeleteOpen(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center transition-colors"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </button>
-          </div>
-        </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex items-start gap-3 border-2 border-foreground p-4">
+                <Mail className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                    Email
+                  </p>
+                  <p className="mt-1 font-mono">{user.email}</p>
+                </div>
+              </div>
 
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">User Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">ID</p>
-              <p className="font-medium text-gray-900">{user.id}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">First Name</p>
-              <p className="font-medium text-gray-900">{user.first_name}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">Last Name</p>
-              <p className="font-medium text-gray-900">{user.last_name}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">Email</p>
-              <p className="font-medium text-gray-900">{user.email}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">Gender</p>
-              <p className="font-medium text-gray-900 capitalize">{user.gernder}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1 flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
-                Created At
-              </p>
-              <p className="font-medium text-gray-900">
-                {user.created_at ? new Date(user.created_at).toLocaleString() : '-'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+              <div className="flex items-start gap-3 border-2 border-foreground p-4">
+                <UserIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                    Age
+                  </p>
+                  <p className="mt-1 text-2xl font-bold">{user.age}</p>
+                </div>
+              </div>
 
-      <Modal
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        title="Edit User"
-      >
-        <UserForm
+              <div className="flex items-start gap-3 border-2 border-foreground p-4">
+                <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                    Created
+                  </p>
+                  <p className="mt-1">{format(new Date(user.createdAt), 'MMM d, yyyy')}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <UserFormDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
           user={user}
-          onSubmit={handleUpdate}
-          onCancel={() => setIsEditOpen(false)}
-          isLoading={isSubmitting}
+          onSubmit={handleUpdateUser}
+          isLoading={updateUser.isPending}
         />
-      </Modal>
 
-      <ConfirmDialog
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete User"
-        message={`Are you sure you want to delete ${user.first_name} ${user.last_name}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        <DeleteConfirmDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleDeleteUser}
+          userName={`${user.firstName} ${user.lastName}`}
+          isLoading={deleteUser.isPending}
+        />
+      </div>
     </div>
   );
-}
+};
 
 export default UserDetails;
