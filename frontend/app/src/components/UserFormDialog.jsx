@@ -32,14 +32,15 @@ export function UserFormDialog({
   user,
   onSubmit,
   isLoading,
+  error,
 }) {
   const isEditing = !!user;
 
   const form = useForm({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
+      first_name: user?.first_name || '',
+      last_name: user?.last_name || '',
       email: user?.email || '',
       gender: user?.gender || undefined,
       age: user?.age || undefined,
@@ -47,10 +48,7 @@ export function UserFormDialog({
   });
 
   const handleSubmit = (data) => {
-    onSubmit(data);
-    if (!isLoading) {
-      form.reset();
-    }
+    onSubmit(data); // Do not close or reset here
   };
 
   const handleOpenChange = (newOpen) => {
@@ -80,7 +78,7 @@ export function UserFormDialog({
               <FormField
                 control={form.control}
                 name="firstName"
-                render={({ field }) => (
+              zod  render={({ field }) => (
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
@@ -177,6 +175,31 @@ export function UserFormDialog({
                 )}
               />
             </div>
+
+            {error && (
+              <div className="mb-2 text-red-600 text-sm">
+                {(() => {
+                  try {
+                    const errObj = JSON.parse(error);
+                    return Object.entries(errObj).map(([field, messages]) =>
+                      Array.isArray(messages)
+                        ? messages.map((msg, i) => (
+                            <div key={field + i}>
+                              <b>{field.charAt(0).toUpperCase() + field.slice(1)}:</b> {msg}
+                            </div>
+                          ))
+                        : (
+                            <div key={field}>
+                              <b>{field.charAt(0).toUpperCase() + field.slice(1)}:</b> {messages}
+                            </div>
+                          )
+                    );
+                  } catch {
+                    return error;
+                  }
+                })()}
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-4">
               <Button

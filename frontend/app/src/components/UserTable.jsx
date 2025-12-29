@@ -10,6 +10,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye } from 'lucide-react';
+import { UserFormDialog } from './UserFormDialog';
+
+
 
 export function UserTable({ users, isLoading }) {
   if (isLoading) {
@@ -41,14 +44,16 @@ export function UserTable({ users, isLoading }) {
             <TableHead className="font-bold uppercase tracking-wider">Email</TableHead>
             <TableHead className="font-bold uppercase tracking-wider">Gender</TableHead>
             <TableHead className="font-bold uppercase tracking-wider">Age</TableHead>
+            <TableHead className="font-bold uppercase tracking-wider">Created At</TableHead>
             <TableHead className="font-bold uppercase tracking-wider text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
+        {console.log("Rendering UserTable with users:", users)}
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id} className="border-b border-muted hover:bg-accent/50">
               <TableCell className="font-medium">
-                {user.firstName} {user.lastName}
+                {user.first_name} {user.last_name}
               </TableCell>
               <TableCell className="font-mono text-sm">{user.email}</TableCell>
               <TableCell>

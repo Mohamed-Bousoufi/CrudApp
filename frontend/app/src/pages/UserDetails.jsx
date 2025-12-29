@@ -14,37 +14,46 @@ const UserDetails = () => {
   const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { data: user, isLoading, isError } = useUser(id || '');
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
-
-  const handleUpdateUser = (data) => {
+  
+  const handleUpdateUser = async (formData) => {
     if (!id) return;
-    updateUser.mutate(
-      {
-        id,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        gender: data.gender,
-        age: data.age,
-      },
-      {
-        onSuccess: () => {
-          setIsEditDialogOpen(false);
-        },
-      }
-    );
+    setIsSubmitting(true);
+    try {
+      await updateUser.mutate(
+        {
+          id,
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            gender: formData.gender,
+            age: formData.age,
+          }
+        }
+      );
+      setIsEditDialogOpen(false);
+      window.location.reload();
+    } catch (error) {
+
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleDeleteUser = () => {
-    if (!id) return;
-    deleteUser.mutate(id, {
-      onSuccess: () => {
-        navigate('/');
-      },
-    });
+  const handleDeleteUser = async () => {
+    try {
+      await deleteUser.mutate(id); 
+      window.location.reload(); 
+    } catch (err) {
+ 
+      console.log("User deleted, navigating to user list."); 
+      window.location.reload();
+    }
   };
 
   if (isLoading) {
@@ -95,12 +104,12 @@ const UserDetails = () => {
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center border-2 border-foreground bg-primary shadow-xs">
                   <span className="text-2xl font-bold text-primary-foreground">
-                    {user.firstName[0]}{user.lastName[0]}
+                    {user.first_name[0]}{user.last_name}
                   </span>
                 </div>
                 <div>
                   <CardTitle className="text-3xl font-bold tracking-tight">
-                    {user.firstName} {user.lastName}
+                    {user.first_name} {user.last_name}
                   </CardTitle>
                   <Badge
                     variant="outline"
@@ -156,28 +165,28 @@ const UserDetails = () => {
                 <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-                    Created
+                    Grender
                   </p>
-                  <p className="mt-1">{format(new Date(user.createdAt), 'MMM d, yyyy')}</p>
+                  <p className="mt-1 text-2xl font-bold">{user.gender}</p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-
+        {console.log("User data passed to UserFormDialog:", user.first_name, user.last_name)}
         <UserFormDialog
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           user={user}
           onSubmit={handleUpdateUser}
-          isLoading={updateUser.isPending}
+          isLoading={isSubmitting}
         />
 
         <DeleteConfirmDialog
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
           onConfirm={handleDeleteUser}
-          userName={`${user.firstName} ${user.lastName}`}
+          userName={`${user.first_name} ${user.last_name}`}
           isLoading={deleteUser.isPending}
         />
       </div>

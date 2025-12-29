@@ -1,63 +1,63 @@
-// API URL - works with nginx proxy in Docker
 const API_URL = '/api';
+
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function withAuthHeaders(headers = {}) {
+  return { ...headers, ...getAuthHeaders() };
+}
 
 export const userApi = {
   // Get all users
-  getUsers: async () => {
-    const response = await fetch(`${API_URL}/users/`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch users');
-    }
+  getAll: async () => {
+    const response = await fetch(`${API_URL}/users/`, {
+      headers: withAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch users');
     return response.json();
   },
 
   // Get single user
-  getUser: async (id) => {
-    const response = await fetch(`${API_URL}/users/${id}/`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch user');
-    }
+  getById: async (id) => {
+    const response = await fetch(`${API_URL}/users/${id}/`, {
+      headers: withAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch user');
     return response.json();
   },
 
   // Create user
-  createUser: async (userData) => {
+  create: async (userData) => {
     const response = await fetch(`${API_URL}/users/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(userData),
     });
-    if (!response.ok) {
-      throw new Error('Failed to create user');
-    }
+    if (!response.ok) throw new Error('Failed to create user');
     return response.json();
   },
 
   // Update user
-  updateUser: async (id, userData) => {
+  update: async (id, userData) => {
+    console.log("API - Updating user:", id, userData);
     const response = await fetch(`${API_URL}/users/${id}/`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(userData),
     });
-    if (!response.ok) {
-      throw new Error('Failed to update user');
-    }
+    if (!response.ok) throw new Error('Failed to update user');
     return response.json();
   },
 
   // Delete user
-  deleteUser: async (id) => {
+  delete: async (id) => {
     const response = await fetch(`${API_URL}/users/${id}/`, {
       method: 'DELETE',
+      headers: withAuthHeaders(),
     });
-    if (!response.ok) {
-      throw new Error('Failed to delete user');
-    }
-    return true;
+    if (!response.ok) throw new Error('Failed to delete user');
+    return response.json();
   },
 };

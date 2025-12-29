@@ -11,17 +11,16 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 8000,
+    port: 80,
     strictPort: true,
     watch: {
       usePolling: true,
     },
     // Allow connections from nginx container
     allowedHosts: ['localhost', 'frontend', 'nginx'],
-    // HMR configuration for Docker
     hmr: {
       host: 'localhost',
-      port: 8000,
+      port: 80,
       protocol: 'ws',
     },
   },

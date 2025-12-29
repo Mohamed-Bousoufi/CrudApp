@@ -1,37 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useUsers, useCreateUser } from '@/hooks/useUsers';
 import { UserTable } from '@/components/UserTable';
 import { UserFormDialog } from '@/components/UserFormDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Users } from 'lucide-react';
-import { userApi } from '@/services/api';
 
 const UserList = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const { data: users = [], isLoading, isError, setUsers } = useUsers();
+  const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: users = [], isLoading, isError } = useUsers();
   const createUser = useCreateUser();
 
-  useEffect(() => {
-    userApi.getUsers()
-      .then(setUsers)
-      .catch(console.error);
-  }, [setUsers]);
-
-  const handleCreateUser = (data) => {
-    createUser.mutate(
-      {
-        firstName: data.firstName,
-        lastName: data.lastName,
+  const handleCreateUser = async (data) => {
+    setFormError('');
+    setIsSubmitting(true);
+    try {
+      await createUser.mutate({
+        first_name: data.firstName,
+        last_name: data.lastName,
         email: data.email,
         gender: data.gender,
         age: data.age,
-      },
-      {
-        onSuccess: () => {
-          setIsCreateDialogOpen(false);
-        },
+      });
+      setIsCreateDialogOpen(false); // Only close on success
+    } catch (err) {
+      // Set error, do not close modal, do not reset form
+      let message = 'Failed to create user';
+      if (err && err.message) {
+        message = err.message;
       }
-    );
+      setFormError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOpenChange = (open) => {
+    setIsCreateDialogOpen(open);
+    if (open) setFormError(''); // Clear error when opening
   };
 
   return (
@@ -81,9 +89,10 @@ const UserList = () => {
 
         <UserFormDialog
           open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
+          onOpenChange={handleOpenChange}
           onSubmit={handleCreateUser}
-          isLoading={createUser.isPending}
+          isLoading={isSubmitting}
+          error={formError}
         />
       </div>
     </div>
