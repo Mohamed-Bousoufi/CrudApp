@@ -11,9 +11,7 @@ services:
       - app-network
 
   backend:
-    # image: elpaco/back-end:latest
-    build:
-      context: ./backend
+    image: elpaco/back-end:latest
       dockerfile: Dockerfile
     container_name: backend
     restart: always
@@ -24,9 +22,7 @@ services:
       - app-network
 
   frontend:
-    # image: elpaco/front-end:latest
-    build:
-      context: ./frontend/app
+    image: elpaco/front-end:latest
       dockerfile: Dockerfile
     container_name: frontend
     restart: always
