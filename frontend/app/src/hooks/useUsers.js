@@ -1,10 +1,23 @@
 import useSWR, { useSWRConfig } from 'swr';
 import { userApi } from '@/services/api';
 
+// Helper to handle unauthorized responses
+function handleUnauthorized(response) {
+  if (response.status === 401) {
+    window.location.href = '/login'; // Redirect to login page
+    return true;
+  }
+  return false;
+}
+
 const USERS_QUERY_KEY = '/users/';
 
 export const useUsers = () => {
-  const { data, error, isLoading } = useSWR(USERS_QUERY_KEY, userApi.getAll);
+  const { data, error, isLoading } = useSWR(USERS_QUERY_KEY, async () => {
+    const response = await userApi.getAll();
+    if (handleUnauthorized(response)) return null;
+    return response;
+  });
   return {
     data,
     error,
@@ -15,7 +28,11 @@ export const useUsers = () => {
 export const useUser = (id) => {
   const { data, error, isLoading } = useSWR(
     id ? `/user/${id}/` : null,
-    () => userApi.getById(id)
+    async () => {
+      const response = await userApi.getById(id);
+      if (handleUnauthorized(response)) return null;
+      return response;
+    }
   );
   return {
     data,
@@ -37,6 +54,7 @@ export const useCreateUser = () => {
       },
       body: JSON.stringify(userData),
     });
+    if (handleUnauthorized(response)) return null;
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || JSON.stringify(errorData));
@@ -53,6 +71,10 @@ export const useUpdateUser = () => {
 
   const updateUser = async ({ id: userId, data: userData }) => {
     const result = await userApi.update(userId, userData);
+    if (result && result.status === 401) {
+      window.location.href = '/login';
+      return null;
+    }
     mutate(USERS_QUERY_KEY);
     return result;
   };
@@ -65,6 +87,10 @@ export const useDeleteUser = () => {
   
   const deleteUser = async (id) => {
     const result = await userApi.delete(id);
+    if (result && result.status === 401) {
+      window.location.href = '/login';
+      return null;
+    }
     mutate(USERS_QUERY_KEY);
     return result;
   };
