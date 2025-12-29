@@ -52,8 +52,6 @@ echo ""
 echo "[2/5] Making migrations..."
 python manage.py makemigrations --noinput
 echo "✅ Done!"
-echo "collecting static files..."
-python manage.py collectstatic --noinput
 # ----------------------------------------
 # Step 3: Apply migrations + superuser
 # ----------------------------------------
